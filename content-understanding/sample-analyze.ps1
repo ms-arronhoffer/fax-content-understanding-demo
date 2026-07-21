@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Runs the "fax-document-analyzer" custom analyzer against a local sample document,
+    Runs the "fax_document_analyzer" custom analyzer against a local sample document,
     independent of the Logic App — useful for validating the analyzer and previewing
     extracted fields before wiring up the end-to-end pipeline.
 
@@ -15,7 +15,7 @@
     to source one.
 
 .PARAMETER AnalyzerId
-    Defaults to "fax-document-analyzer" (must match analyzer-schema.json's analyzerId).
+    Defaults to "fax_document_analyzer" (must match analyzer-schema.json's analyzerId).
 
 .EXAMPLE
     ./sample-analyze.ps1 -Endpoint "https://aif-faxcu123.cognitiveservices.azure.com" -FilePath ./sample-fax.pdf
@@ -31,7 +31,7 @@ param(
     [string]$ApiKey,
 
     [Parameter(Mandatory = $false)]
-    [string]$AnalyzerId = "fax-document-analyzer",
+    [string]$AnalyzerId = "fax_document_analyzer",
 
     [Parameter(Mandatory = $false)]
     [string]$ApiVersion = "2025-11-01"
@@ -78,6 +78,9 @@ if ($response.StatusCode -ge 400) {
 }
 
 $operationLocation = $response.Headers["Operation-Location"]
+if ($operationLocation -is [System.Array]) {
+    $operationLocation = $operationLocation[0]
+}
 if (-not $operationLocation) {
     throw "Expected an Operation-Location header in the analyze response but none was returned."
 }
@@ -102,14 +105,31 @@ if ($status -ne "Succeeded") {
 
 Write-Host "`nAnalysis succeeded. Extracted fields:`n" -ForegroundColor Green
 $fields = $result.result.contents[0].fields
+
+function Format-FieldValue($field) {
+    if ($null -ne $field.valueString) { return $field.valueString }
+    if ($null -ne $field.valueInteger) { return $field.valueInteger }
+    if ($null -ne $field.valueBoolean) { return $field.valueBoolean }
+    if ($null -ne $field.valueDate) { return $field.valueDate }
+    if ($null -ne $field.valueNumber) { return $field.valueNumber }
+    if ($null -ne $field.valueObject) {
+        $parts = $field.valueObject.PSObject.Properties.Name | ForEach-Object {
+            "$_=$(Format-FieldValue $field.valueObject.$_)"
+        }
+        return "{ $($parts -join '; ') }"
+    }
+    if ($null -ne $field.valueArray) {
+        $parts = $field.valueArray | ForEach-Object { Format-FieldValue $_ }
+        return "[$($parts -join ', ')]"
+    }
+    return $null
+}
+
 foreach ($fieldName in $fields.PSObject.Properties.Name) {
     $field = $fields.$fieldName
-    $value = $field.valueString
-    if ($null -eq $value) { $value = $field.valueInteger }
-    if ($null -eq $value) { $value = $field.valueBoolean }
-    if ($null -eq $value) { $value = $field.valueDate }
+    $value = Format-FieldValue $field
     $confidence = if ($field.confidence) { "{0:P0}" -f $field.confidence } else { "n/a" }
-    Write-Host ("  {0,-20} {1,-45} (confidence: {2})" -f $fieldName, $value, $confidence)
+    Write-Host ("  {0,-25} {1,-45} (confidence: {2})" -f $fieldName, $value, $confidence)
 }
 
 $outFile = Join-Path (Split-Path $FilePath -Parent) "$([System.IO.Path]::GetFileNameWithoutExtension($FilePath)).result.json"

@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Configures default model deployments and creates the custom "fax-document-analyzer"
+    Configures default model deployments and creates the custom "fax_document_analyzer"
     on an Azure Content Understanding (Microsoft Foundry / AIServices) resource.
 
 .DESCRIPTION
@@ -70,11 +70,10 @@ $headers["Content-Type"] = "application/json"
 # 1. Set default model deployments
 Write-Host "Setting default model deployments on $Endpoint ..." -ForegroundColor Cyan
 $defaultsBody = @{
-    generativeModelsDefault = @{
-        deploymentName = $GptDeploymentName
-    }
-    embeddingModelsDefault = @{
-        deploymentName = $EmbeddingDeploymentName
+    modelDeployments = @{
+        "prebuilt-analyzer-completion"      = $GptDeploymentName
+        "prebuilt-analyzer-completion-mini" = $GptDeploymentName
+        "prebuilt-analyzer-embedding"        = $EmbeddingDeploymentName
     }
 } | ConvertTo-Json -Depth 5
 
@@ -97,6 +96,9 @@ if ($response.StatusCode -ge 400) {
 
 # Analyzer creation can be asynchronous (202 + Operation-Location) or synchronous (200/201).
 $operationLocation = $response.Headers["Operation-Location"]
+if ($operationLocation -is [System.Array]) {
+    $operationLocation = $operationLocation[0]
+}
 if ($operationLocation) {
     Write-Host "Analyzer creation is processing asynchronously. Polling..." -ForegroundColor Cyan
     $status = "Running"

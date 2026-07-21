@@ -1,7 +1,11 @@
 {
-  "analyzerId": "fax-document-analyzer",
+  "analyzerId": "fax_document_analyzer",
   "description": "Custom Azure Content Understanding analyzer for inbound fax documents (referrals, orders, forms, invoices). Mixes extract/classify/generate field methods to demonstrate capabilities beyond classic OCR-based extraction.",
   "baseAnalyzerId": "prebuilt-document",
+  "models": {
+    "completion": "prebuilt-analyzer-completion",
+    "embedding": "prebuilt-analyzer-embedding"
+  },
   "config": {
     "returnDetails": true,
     "estimateFieldSourceAndConfidence": true

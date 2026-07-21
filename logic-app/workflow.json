@@ -14,7 +14,7 @@
       }
     },
     "analyzerId": {
-      "defaultValue": "fax-document-analyzer",
+      "defaultValue": "fax_document_analyzer",
       "type": "String"
     },
     "storageAccountName": {

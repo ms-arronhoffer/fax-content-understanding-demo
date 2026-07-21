@@ -3,10 +3,10 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "location": {
-      "value": "centralus"
+      "value": "eastus2"
     },
     "analyzerId": {
-      "value": "fax-document-analyzer"
+      "value": "fax_document_analyzer"
     },
     "gptDeploymentName": {
       "value": "gpt-4.1-mini"

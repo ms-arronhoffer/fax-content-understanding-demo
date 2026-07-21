@@ -5,7 +5,7 @@ param location string = 'centralus'
 param baseSuffix string = uniqueString(resourceGroup().id)
 
 @description('Analyzer ID that must match content-understanding/analyzer-schema.json (analyzerId field).')
-param analyzerId string = 'fax-document-analyzer'
+param analyzerId string = 'fax_document_analyzer'
 
 @description('Name of the GPT model deployment used by Content Understanding for classify/generate fields.')
 param gptDeploymentName string = 'gpt-4.1-mini'
