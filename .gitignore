@@ -13,6 +13,10 @@ samples/*.jpeg
 samples/*.png
 !samples/README.md
 
+# Generated test output from sample-analyze.ps1 (regenerate by re-running the script)
+samples/*.result.json
+!samples/expected-output.json
+
 # OS/editor cruft
 .DS_Store
 Thumbs.db
