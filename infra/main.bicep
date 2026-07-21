@@ -117,7 +117,7 @@ resource embeddingDeployment 'Microsoft.CognitiveServices/accounts/deployments@2
   parent: foundryAccount
   name: embeddingDeploymentName
   sku: {
-    name: 'Standard'
+    name: 'GlobalStandard'
     capacity: embeddingCapacity
   }
   properties: {
@@ -190,7 +190,6 @@ resource logicApp 'Microsoft.Logic/workflows@2019-05-01' = {
     incomingContainer
     processedContainer
     errorsContainer
-    blobConnection
   ]
 }
 
