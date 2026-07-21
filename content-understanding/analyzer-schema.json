@@ -1,0 +1,89 @@
+{
+  "analyzerId": "fax-document-analyzer",
+  "description": "Custom Azure Content Understanding analyzer for inbound fax documents (referrals, orders, forms, invoices). Mixes extract/classify/generate field methods to demonstrate capabilities beyond classic OCR-based extraction.",
+  "baseAnalyzerId": "prebuilt-document",
+  "config": {
+    "returnDetails": true,
+    "estimateFieldSourceAndConfidence": true
+  },
+  "fieldSchema": {
+    "name": "FaxDocumentFields",
+    "description": "Structured fields extracted or generated from an inbound fax document",
+    "fields": {
+      "SenderName": {
+        "type": "string",
+        "method": "extract",
+        "description": "Name of the person who sent the fax, from the letterhead, signature, or transmission banner"
+      },
+      "SenderOrganization": {
+        "type": "string",
+        "method": "extract",
+        "description": "Company, clinic, or organization name of the sender"
+      },
+      "SenderFaxNumber": {
+        "type": "string",
+        "method": "extract",
+        "description": "Fax number of the sender, typically found in the transmission banner at the top of the page"
+      },
+      "SenderPhoneNumber": {
+        "type": "string",
+        "method": "extract",
+        "description": "Callback phone number for the sender, if present in the document"
+      },
+      "RecipientName": {
+        "type": "string",
+        "method": "extract",
+        "description": "Name of the intended recipient of the fax"
+      },
+      "RecipientFaxNumber": {
+        "type": "string",
+        "method": "extract",
+        "description": "Fax number of the recipient, typically found in the transmission banner"
+      },
+      "DateSent": {
+        "type": "date",
+        "method": "extract",
+        "description": "Date the fax was sent or the date printed on the document, whichever is most specific"
+      },
+      "PageCount": {
+        "type": "integer",
+        "method": "extract",
+        "description": "Total number of pages in the fax transmission, from the banner if present"
+      },
+      "DocumentType": {
+        "type": "string",
+        "method": "classify",
+        "enum": [
+          "Referral",
+          "Invoice",
+          "PurchaseOrder",
+          "LabResult",
+          "InsuranceForm",
+          "General",
+          "Other"
+        ],
+        "description": "Classification of the primary document type contained in the fax"
+      },
+      "Subject": {
+        "type": "string",
+        "method": "extract",
+        "description": "Subject line or stated reason for the fax, if present"
+      },
+      "Summary": {
+        "type": "string",
+        "method": "generate",
+        "description": "A 2-3 sentence plain-language summary of the fax content, written for a reviewer to quickly triage the document"
+      },
+      "ActionRequired": {
+        "type": "boolean",
+        "method": "generate",
+        "description": "Whether the document explicitly requests an action, reply, signature, or follow-up from the recipient"
+      },
+      "ActionDescription": {
+        "type": "string",
+        "method": "generate",
+        "description": "If ActionRequired is true, a short description of the action being requested; otherwise empty"
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "centralus"
+    },
+    "analyzerId": {
+      "value": "fax-document-analyzer"
+    },
+    "gptDeploymentName": {
+      "value": "gpt-4.1-mini"
+    },
+    "gptModelVersion": {
+      "value": "2025-04-14"
+    },
+    "gptCapacity": {
+      "value": 10
+    },
+    "embeddingDeploymentName": {
+      "value": "text-embedding-3-large"
+    },
+    "embeddingModelVersion": {
+      "value": "1"
+    },
+    "embeddingCapacity": {
+      "value": 10
+    }
+  }
+}

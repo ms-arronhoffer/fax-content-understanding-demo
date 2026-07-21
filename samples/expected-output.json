@@ -1,0 +1,99 @@
+{
+  "id": "3f6b9e2a-3c9b-4a7e-9c1a-7e2a6a2b9f10",
+  "status": "Succeeded",
+  "result": {
+    "analyzerId": "fax-document-analyzer",
+    "apiVersion": "2025-11-01",
+    "createdAt": "2026-07-21T15:32:04Z",
+    "warnings": [],
+    "contents": [
+      {
+        "path": "input1",
+        "markdown": "CONTOSO CLINIC\n\nFAX TRANSMISSION\n\nTO: Riverside Imaging Center  FAX: (555) 201-8890\nFROM: Dr. Elena Ward  FAX: (555) 340-1122\nDATE: 07/18/2026  PAGES: 2\n\nRE: Patient referral - MRI request\n\n...",
+        "fields": {
+          "SenderName": {
+            "type": "string",
+            "valueString": "Dr. Elena Ward",
+            "confidence": 0.93,
+            "source": "D(1,1.02,0.85,3.4,0.85,3.4,1.05,1.02,1.05)"
+          },
+          "SenderOrganization": {
+            "type": "string",
+            "valueString": "Contoso Clinic",
+            "confidence": 0.91
+          },
+          "SenderFaxNumber": {
+            "type": "string",
+            "valueString": "(555) 340-1122",
+            "confidence": 0.97
+          },
+          "SenderPhoneNumber": {
+            "type": "string",
+            "valueString": "(555) 340-1100",
+            "confidence": 0.88
+          },
+          "RecipientName": {
+            "type": "string",
+            "valueString": "Riverside Imaging Center",
+            "confidence": 0.95
+          },
+          "RecipientFaxNumber": {
+            "type": "string",
+            "valueString": "(555) 201-8890",
+            "confidence": 0.97
+          },
+          "DateSent": {
+            "type": "date",
+            "valueDate": "2026-07-18",
+            "confidence": 0.96
+          },
+          "PageCount": {
+            "type": "integer",
+            "valueInteger": 2,
+            "confidence": 0.99
+          },
+          "DocumentType": {
+            "type": "string",
+            "valueString": "Referral",
+            "confidence": 0.89
+          },
+          "Subject": {
+            "type": "string",
+            "valueString": "Patient referral - MRI request",
+            "confidence": 0.9
+          },
+          "Summary": {
+            "type": "string",
+            "valueString": "Dr. Elena Ward at Contoso Clinic is referring a patient to Riverside Imaging Center for an MRI. The fax includes patient history and requests scheduling confirmation."
+          },
+          "ActionRequired": {
+            "type": "boolean",
+            "valueBoolean": true
+          },
+          "ActionDescription": {
+            "type": "string",
+            "valueString": "Schedule the requested MRI and fax back a confirmed appointment date/time."
+          }
+        },
+        "kind": "document",
+        "startPageNumber": 1,
+        "endPageNumber": 2,
+        "unit": "inch",
+        "pages": [
+          { "pageNumber": 1, "angle": 0, "width": 8.5, "height": 11 },
+          { "pageNumber": 2, "angle": 0, "width": 8.5, "height": 11 }
+        ],
+        "analyzerId": "fax-document-analyzer",
+        "mimeType": "application/pdf"
+      }
+    ]
+  },
+  "usage": {
+    "documentStandardPages": 2,
+    "contextualizationTokens": 1876,
+    "tokens": {
+      "gpt-4.1-mini-input": 998,
+      "gpt-4.1-mini-output": 214
+    }
+  }
+}

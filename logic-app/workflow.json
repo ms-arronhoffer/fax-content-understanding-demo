@@ -1,0 +1,276 @@
+{
+  "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "$connections": {
+      "defaultValue": {},
+      "type": "Object"
+    },
+    "contentUnderstandingEndpoint": {
+      "defaultValue": "",
+      "type": "String",
+      "metadata": {
+        "description": "Base endpoint of the Content Understanding / Foundry resource, e.g. https://aif-faxcu123.cognitiveservices.azure.com"
+      }
+    },
+    "analyzerId": {
+      "defaultValue": "fax-document-analyzer",
+      "type": "String"
+    },
+    "storageAccountName": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "incomingContainerName": {
+      "defaultValue": "incoming",
+      "type": "String"
+    },
+    "processedContainerName": {
+      "defaultValue": "processed",
+      "type": "String"
+    },
+    "errorsContainerName": {
+      "defaultValue": "errors",
+      "type": "String"
+    }
+  },
+  "triggers": {
+    "When_a_blob_is_added_or_modified": {
+      "type": "ApiConnection",
+      "recurrence": {
+        "frequency": "Minute",
+        "interval": 1
+      },
+      "splitOn": "@triggerBody()?['value']",
+      "inputs": {
+        "host": {
+          "connection": {
+            "referenceName": "azureblob"
+          }
+        },
+        "method": "get",
+        "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent(parameters('storageAccountName')))}/triggers/batch/onupdatedfile",
+        "queries": {
+          "folderId": "@parameters('incomingContainerName')",
+          "maxFileCount": 20
+        }
+      }
+    }
+  },
+  "actions": {
+    "Get_blob_content": {
+      "type": "ApiConnection",
+      "runAfter": {},
+      "inputs": {
+        "host": {
+          "connection": {
+            "referenceName": "azureblob"
+          }
+        },
+        "method": "get",
+        "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent(parameters('storageAccountName')))}/files/@{encodeURIComponent(triggerBody()?['Id'])}/content",
+        "queries": {
+          "inferContentType": true
+        }
+      }
+    },
+    "Create_SAS_URI_by_path": {
+      "type": "ApiConnection",
+      "runAfter": {
+        "Get_blob_content": [
+          "Succeeded"
+        ]
+      },
+      "inputs": {
+        "host": {
+          "connection": {
+            "referenceName": "azureblob"
+          }
+        },
+        "method": "post",
+        "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent(parameters('storageAccountName')))}/CreateSharedLinkByPath",
+        "queries": {
+          "path": "@triggerBody()?['Path']"
+        },
+        "body": {
+          "AccessProtocol": "HybridDeploymentSasUri",
+          "SharedAccessExpiryTime": "@{addMinutes(utcNow(), 30)}",
+          "SharedAccessPermission": "Read"
+        }
+      }
+    },
+    "Analyze_Document_with_Content_Understanding": {
+      "type": "Http",
+      "runAfter": {
+        "Create_SAS_URI_by_path": [
+          "Succeeded"
+        ]
+      },
+      "inputs": {
+        "method": "POST",
+        "uri": "@{parameters('contentUnderstandingEndpoint')}/contentunderstanding/analyzers/@{parameters('analyzerId')}:analyze?api-version=2025-11-01",
+        "authentication": {
+          "type": "ManagedServiceIdentity",
+          "audience": "https://cognitiveservices.azure.com/"
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "inputs": [
+            {
+              "url": "@{body('Create_SAS_URI_by_path')?['WebUrl']}"
+            }
+          ]
+        }
+      }
+    },
+    "Initialize_operationLocation": {
+      "type": "InitializeVariable",
+      "runAfter": {
+        "Analyze_Document_with_Content_Understanding": [
+          "Succeeded"
+        ]
+      },
+      "inputs": {
+        "variables": [
+          {
+            "name": "operationLocation",
+            "type": "string",
+            "value": "@{outputs('Analyze_Document_with_Content_Understanding')['headers']?['Operation-Location']}"
+          }
+        ]
+      }
+    },
+    "Initialize_analysisStatus": {
+      "type": "InitializeVariable",
+      "runAfter": {
+        "Initialize_operationLocation": [
+          "Succeeded"
+        ]
+      },
+      "inputs": {
+        "variables": [
+          {
+            "name": "analysisStatus",
+            "type": "string",
+            "value": "Running"
+          }
+        ]
+      }
+    },
+    "Until_analysis_completes": {
+      "type": "Until",
+      "runAfter": {
+        "Initialize_analysisStatus": [
+          "Succeeded"
+        ]
+      },
+      "expression": "@or(equals(variables('analysisStatus'), 'Succeeded'), equals(variables('analysisStatus'), 'Failed'))",
+      "limit": {
+        "count": 30,
+        "timeout": "PT5M"
+      },
+      "actions": {
+        "Delay_before_polling": {
+          "type": "Wait",
+          "inputs": {
+            "interval": {
+              "count": 3,
+              "unit": "Second"
+            }
+          }
+        },
+        "Get_analysis_result": {
+          "type": "Http",
+          "runAfter": {
+            "Delay_before_polling": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "method": "GET",
+            "uri": "@{variables('operationLocation')}",
+            "authentication": {
+              "type": "ManagedServiceIdentity",
+              "audience": "https://cognitiveservices.azure.com/"
+            }
+          }
+        },
+        "Set_analysisStatus": {
+          "type": "SetVariable",
+          "runAfter": {
+            "Get_analysis_result": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "name": "analysisStatus",
+            "value": "@{body('Get_analysis_result')?['status']}"
+          }
+        }
+      }
+    },
+    "Check_if_analysis_succeeded": {
+      "type": "If",
+      "runAfter": {
+        "Until_analysis_completes": [
+          "Succeeded"
+        ]
+      },
+      "expression": {
+        "and": [
+          {
+            "equals": [
+              "@variables('analysisStatus')",
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      "actions": {
+        "Write_result_to_processed_folder": {
+          "type": "ApiConnection",
+          "inputs": {
+            "host": {
+              "connection": {
+                "referenceName": "azureblob"
+              }
+            },
+            "method": "post",
+            "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent(parameters('storageAccountName')))}/files",
+            "queries": {
+              "folderPath": "@parameters('processedContainerName')",
+              "name": "@{concat(triggerBody()?['DisplayName'], '.json')}",
+              "queryParametersSingleEncoded": true
+            },
+            "body": "@{string(body('Get_analysis_result'))}"
+          }
+        }
+      },
+      "else": {
+        "actions": {
+          "Write_error_to_errors_folder": {
+            "type": "ApiConnection",
+            "inputs": {
+              "host": {
+                "connection": {
+                  "referenceName": "azureblob"
+                }
+              },
+              "method": "post",
+              "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent(parameters('storageAccountName')))}/files",
+              "queries": {
+                "folderPath": "@parameters('errorsContainerName')",
+                "name": "@{concat(triggerBody()?['DisplayName'], '.error.json')}",
+                "queryParametersSingleEncoded": true
+              },
+              "body": "@{string(body('Get_analysis_result'))}"
+            }
+          }
+        }
+      }
+    }
+  },
+  "outputs": {}
+}

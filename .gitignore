@@ -1,0 +1,34 @@
+# Secrets / local config
+*.env
+.env
+local.settings.json
+*.PublishSettings
+
+# Sample documents that may contain real/sensitive content
+samples/*.pdf
+samples/*.tif
+samples/*.tiff
+samples/*.jpg
+samples/*.jpeg
+samples/*.png
+!samples/README.md
+
+# OS/editor cruft
+.DS_Store
+Thumbs.db
+.vscode/*.log
+
+# pptx working artifacts (if the pptx skill unpacks/renders locally)
+presentation/unpacked/
+presentation/*.pdf
+presentation/slide-*.jpg
+presentation/qa-render/
+presentation/node_modules/
+presentation/*.JPG
+
+# Bicep/ARM scratch
+infra/*.json.bak
+*.azure/
+
+# PowerShell transcript output
+*.transcript.txt
