@@ -8,10 +8,10 @@ param baseSuffix string = uniqueString(resourceGroup().id)
 param analyzerId string = 'fax_document_analyzer'
 
 @description('Name of the GPT model deployment used by Content Understanding for classify/generate fields.')
-param gptDeploymentName string = 'gpt-4.1-mini'
+param gptDeploymentName string = 'gpt-5.4-mini'
 
 @description('Model version for the GPT deployment. Verify current supported version for your region/quota before deploying.')
-param gptModelVersion string = '2025-04-14'
+param gptModelVersion string = '2026-03-17'
 
 @description('Capacity (in thousands of tokens per minute) for the GPT deployment.')
 param gptCapacity int = 10
@@ -107,7 +107,7 @@ resource gptDeployment 'Microsoft.CognitiveServices/accounts/deployments@2025-04
   properties: {
     model: {
       format: 'OpenAI'
-      name: 'gpt-4.1-mini'
+      name: 'gpt-5.4-mini'
       version: gptModelVersion
     }
   }

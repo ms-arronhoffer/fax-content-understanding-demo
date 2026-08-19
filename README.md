@@ -48,7 +48,7 @@ Every field also returns a **confidence score** and **source grounding** (where 
 
 ## Prerequisites
 
-- Azure subscription with access to create a **Microsoft Foundry** resource (`Microsoft.CognitiveServices/accounts`, kind `AIServices`) in a region that supports the Content Understanding GA API (`2025-11-01`): `australiaeast`, `eastus`, `eastus2`, `japaneast`, `northeurope`, `southcentralus`, `southeastasia`, `swedencentral`, `uksouth`, `westeurope`, `westus`, `westus3`. This demo's default region is **East US 2** (`centralus` is *not* supported by the GA API). Confirm Content Understanding + GPT-4.1-mini deployment availability in your subscription before deploying.
+- Azure subscription with access to create a **Microsoft Foundry** resource (`Microsoft.CognitiveServices/accounts`, kind `AIServices`) in a region that supports the Content Understanding GA API (`2025-11-01`): `australiaeast`, `eastus`, `eastus2`, `japaneast`, `northeurope`, `southcentralus`, `southeastasia`, `swedencentral`, `uksouth`, `westeurope`, `westus`, `westus3`. This demo's default region is **East US 2** (`centralus` is *not* supported by the GA API). Confirm Content Understanding + GPT-5.4-mini deployment availability in your subscription before deploying.
 - Azure CLI (`az`) logged in, with the Logic Apps and Cognitive Services resource providers registered
 - PowerShell 7+ (for the `content-understanding/*.ps1` scripts)
 - A Power Automate license (standard cloud flow connectors: Azure Blob Storage)
@@ -67,7 +67,7 @@ az deployment group create `
 After the deployment finishes:
 
 1. Run [content-understanding/setup-analyzer.ps1](content-understanding/setup-analyzer.ps1) to configure default model deployments and create the custom analyzer (`fax_document_analyzer`, matching [content-understanding/analyzer-schema.json](content-understanding/analyzer-schema.json)) on the new Foundry resource. That endpoint value comes from the main.bicep deployment output foundryEndpoint (the Foundry/AIServices account's endpoint).
-   - Parameters: `-Endpoint` (required), `-ApiKey` (optional — omit to use an Azure AD token via `az account get-access-token`), `-GptDeploymentName` (default `gpt-4.1-mini`), `-EmbeddingDeploymentName` (default `text-embedding-3-large`), `-ApiVersion` (default `2025-11-01`).
+   - Parameters: `-Endpoint` (required), `-ApiKey` (optional — omit to use an Azure AD token via `az account get-access-token`), `-GptDeploymentName` (default `gpt-5.4-mini`), `-EmbeddingDeploymentName` (default `text-embedding-3-large`), `-ApiVersion` (default `2025-11-01`).
 2. Run [content-understanding/sample-analyze.ps1](content-understanding/sample-analyze.ps1) against a sample file to confirm the analyzer works, independent of the Logic App.
    - Parameters: `-Endpoint` (required), `-FilePath` (required), `-ApiKey` (optional), `-AnalyzerId` (default `fax_document_analyzer` — pass `prebuilt-documentFields` instead to get generic, dynamically-discovered key-value pairs from any document, similar to Document Intelligence's General Document model, with no custom schema needed), `-ApiVersion` (default `2025-11-01`).
 3. Open the deployed Logic App once in the **Logic App Designer** in the Azure portal — this "touches" the hand-authored [workflow.json](logic-app/workflow.json) so the designer normalizes any connector action shapes, then Save.

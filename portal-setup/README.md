@@ -10,7 +10,7 @@ the **Azure AI Foundry** portal, instead of running Bicep.
 
 ## 0. Prerequisites
 
-- An Azure subscription with quota for a Foundry (`Microsoft.CognitiveServices/accounts`, kind `AIServices`) resource and GPT-4.1-mini / text-embedding-3-large **GlobalStandard** model deployments.
+- An Azure subscription with quota for a Foundry (`Microsoft.CognitiveServices/accounts`, kind `AIServices`) resource and GPT-5.4-mini / text-embedding-3-large **GlobalStandard** model deployments.
 - Pick a region where the Content Understanding **GA API (`2025-11-01`)** is supported:
   `australiaeast`, `eastus`, `eastus2`, `japaneast`, `northeurope`, `southcentralus`,
   `southeastasia`, `swedencentral`, `uksouth`, `westeurope`, `westus`, `westus3`.
@@ -45,7 +45,7 @@ the **Azure AI Foundry** portal, instead of running Bicep.
 ## 4. Deploy the GPT and embedding models
 
 1. On the Foundry resource, open **Go to Azure AI Foundry portal** (ai.azure.com) for this resource, or use the **Model deployments** blade directly in the Azure Portal.
-2. **+ Deploy model** → search **gpt-4.1-mini** → Deployment type: **Global Standard** → Deployment name: `gpt-4.1-mini` → Capacity: `10` (10K TPM) → **Deploy**.
+2. **+ Deploy model** → search **gpt-5.4-mini** → Deployment type: **Global Standard** → Deployment name: `gpt-5.4-mini` → Capacity: `10` (10K TPM) → **Deploy**.
 3. **+ Deploy model** again → search **text-embedding-3-large** → Deployment type: **Global Standard** → Deployment name: `text-embedding-3-large` → Capacity: `10` → **Deploy**.
 4. Wait for both deployments to show **Succeeded**.
 
@@ -61,8 +61,8 @@ Shell or local `az`/PowerShell works fine — no code editor needed):
 $token = az account get-access-token --resource "https://cognitiveservices.azure.com" --query accessToken -o tsv
 $body = @{
     modelDeployments = @{
-        "prebuilt-analyzer-completion"      = "gpt-4.1-mini"
-        "prebuilt-analyzer-completion-mini" = "gpt-4.1-mini"
+        "prebuilt-analyzer-completion"      = "gpt-5.4-mini"
+        "prebuilt-analyzer-completion-mini" = "gpt-5.4-mini"
         "prebuilt-analyzer-embedding"        = "text-embedding-3-large"
     }
 } | ConvertTo-Json -Depth 5
