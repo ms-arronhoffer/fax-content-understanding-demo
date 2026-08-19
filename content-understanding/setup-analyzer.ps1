@@ -36,7 +36,7 @@ param(
     [string]$ApiKey,
 
     [Parameter(Mandatory = $false)]
-    [string]$GptDeploymentName = "gpt-4.1-mini",
+    [string]$GptDeploymentName = "gpt-5.4-mini",
 
     [Parameter(Mandatory = $false)]
     [string]$EmbeddingDeploymentName = "text-embedding-3-large",
